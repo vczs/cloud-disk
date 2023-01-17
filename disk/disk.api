@@ -1,0 +1,333 @@
+service disk-api {
+	// 发送邮箱验证码
+	@handler EmailCode
+	post /emain/code(EmailCodeRequest) returns (EmailCodeReply)
+	
+	// 用户注册
+	@handler UserRegister
+	post /user/register(UserRegisterRequest) returns (UserRegisterReply)
+	
+	// 用户登录
+	@handler UserLogin
+	post /user/login(UserLoginRequest) returns (UserLoginReply)
+}
+
+// 发送邮箱验证码
+type (
+	EmailCodeRequest {
+		Email string `json:"email"` // 邮箱
+	}
+	EmailCodeReply {
+		Code int `json:"code"`
+	}
+)
+
+// 用户注册
+type (
+	UserRegisterRequest {
+		Name     string `json:"name"`     // 用户名
+		Password string `json:"password"` // 密码
+		Email    string `json:"email"`    // 邮箱
+		Code     string `json:"code"`     // 验证码
+	}
+	UserRegisterReply {
+		Code int `json:"code"`
+	}
+)
+
+// 用户登录
+type (
+	UserLoginRequest {
+		Name     string `json:"name"`     // 用户名
+		Password string `json:"password"` // 密码
+	}
+	UserLoginReply {
+		Code int                `json:"code"`
+		Data UserLoginReplyData `json:"data"`
+	}
+	UserLoginReplyData {
+		Token        string `json:"token"`         // token
+		RefreshToken string `json:"refresh_token"` // refreshToken
+	}
+)
+
+@server (
+	middleware: Auth
+)
+service disk-api {
+	// 用户信息
+	@handler UserInfo
+	post /user/info(UserInfoRequest) returns (UserInfoReply)
+	
+	// 刷新token
+	@handler RefreshToken
+	post /refresh/token(RefreshTokenRequest) returns (RefreshTokenReply)
+	
+	// 用户文件列表
+	@handler FileList
+	post /file/list(FileListRequest) returns (FileListReply)
+	
+	// 用户文件重命名
+	@handler FileRename
+	post /file/rename(FileRenameRequest) returns (FileRenameReply)
+	
+	// 用户文件夹创建
+	@handler FolderCreate
+	post /folder/create(FolderCreateRequest) returns (FolderCreateReply)
+	
+	// 用户文件删除
+	@handler FileDelete
+	delete /file/delete(FileDeleteRequest) returns (FileDeleteReply)
+	
+	// 文件移动
+	@handler FileMove
+	post /file/move(FileMoveRequest) returns (FileMoveReply)
+}
+
+// 用户信息
+type (
+	UserInfoRequest {
+	}
+	UserInfoReply {
+		Code int               `json:"code"`
+		Data UserInfoReplyData `json:"data"`
+	}
+	UserInfoReplyData {
+		Name        string `json:"name"`         // 用户名
+		Email       string `json:"email"`        // 邮箱
+		NowVolume   int64  `json:"now_volume"`   // 当前容量
+		TotalVolume int64  `json:"total_volume"` // 总容量
+	}
+)
+
+// 刷新token
+type (
+	RefreshTokenRequest {
+	}
+	RefreshTokenReply {
+		Code int                   `json:"code"`
+		Data RefreshTokenReplyData `json:"data"`
+	}
+	RefreshTokenReplyData {
+		Token        string `json:"token"`         // token
+		RefreshToken string `json:"refresh_token"` // refreshToken
+	}
+)
+
+// 用户文件列表
+type (
+	FileListRequest {
+		Fid  string `json:"fid,optional"`
+		Page int    `json:"page,optional"`
+		Size int    `json:"size,optional"`
+	}
+	FileListReply {
+		Code int               `json:"code"`
+		Data FileListReplyData `json:"data"`
+	}
+	FileListReplyData {
+		Pid   string   `json:"pid"`
+		List  []*Files `json:"list"`
+		Total int64    `json:"total"`
+	}
+	Files {
+		Fid    string `json:"fid"`
+		Name   string `json:"name"`
+		Ext    string `json:"ext"`
+		Type   int    `json:"type"`
+		Url    string `json:"url"`
+		Number int    `json:"number"`
+		Size   int64  `json:"size"`
+	}
+)
+
+// 用户文件名称修改
+type (
+	FileRenameRequest {
+		Fid  string `json:"fid"`
+		Name string `json:"name"`
+	}
+	FileRenameReply {
+		Code int `json:"code"`
+	}
+)
+
+// 文件夹创建
+type (
+	FolderCreateRequest {
+		Pid  string `json:"pid,optional"`
+		Name string `json:"name"`
+	}
+	FolderCreateReply {
+		Code int                   `json:"code"`
+		Data FolderCreateReplyData `json:"data"`
+	}
+	FolderCreateReplyData {
+		Fid string `json:"fid"`
+	}
+)
+
+// 用户文件删除
+type (
+	FileDeleteRequest {
+		Fid string `json:"fid"`
+	}
+	FileDeleteReply {
+		Code int `json:"code"`
+	}
+)
+
+// 用户移动
+type (
+	FileMoveRequest {
+		Fid string `json:"fid"`
+		Pid string `json:"pid"`
+	}
+	FileMoveReply {
+		Code int `json:"code"`
+	}
+)
+
+@server (
+	middleware: Auth
+)
+service disk-api {
+	// 分享文件
+	@handler FileShare
+	post /file/share(FileShareRequest) returns (FileShareReply)
+	
+	// 查看分享详情
+	@handler ShareInfo
+	post /share/info(ShareInfoRequest) returns (ShareInfoReply)
+	
+	// 分享资源保存
+	@handler ShareSave
+	post /share/save(ShareSaveRequest) returns (ShareSaveReply)
+}
+
+// 分享文件
+type (
+	FileShareRequest {
+		Fid     string `json:"fid"`
+		Expired int64  `json:"expired"`
+		Encrypt string `json:"encrypt,optional"`
+	}
+	FileShareReply {
+		Code int                `json:"code"`
+		Data FileShareReplyData `json:"data"`
+	}
+	FileShareReplyData {
+		Sid string `json:"sid"`
+	}
+)
+
+// 查看分享详情
+type (
+	ShareInfoRequest {
+		Sid     string `json:"sid"`
+		Encrypt string `json:"encrypt,optional"`
+	}
+	ShareInfoReply {
+		Code int                `json:"code"`
+		Data ShareInfoReplyData `json:"data"`
+	}
+	ShareInfoReplyData {
+		Name    string `json:"name"`
+		Ext     string `json:"ext"`
+		Size    int64  `json:"size"`
+		Url     string `json:"url"`
+		Type    int    `json:"type"`
+		Expired int64  `json:"expired"`
+		Browse  int    `json:"browse"`
+	}
+)
+
+// 分享资源保存
+type (
+	ShareSaveRequest {
+		Sid     string `json:"sid"`
+		Pid     string `json:"pid"`
+		Encrypt string `json:"encrypt,optional"`
+	}
+	ShareSaveReply {
+		Code int                `json:"code"`
+		Data ShareSaveReplyData `json:"data"`
+	}
+	ShareSaveReplyData {
+		Fid string `json:"fid"`
+	}
+)
+
+@server (
+	middleware: Auth
+)
+service disk-api {
+	// 上传文件
+	@handler FileUpload
+	post /file/upload(FileUploadRequest) returns (FileUploadReply)
+	
+	// 发起分块上传
+	@handler InitPart
+	post /init/part(InitPartRequest) returns (InitPartReply)
+	
+	// 上传分块
+	@handler UploadPart
+	post /upload/part(UploadPartRequest) returns (UploadPartReply)
+	
+	// 完成分块上传
+	@handler CompletePart
+	post /complete/part(CompletePartRequest) returns (CompletePartReply)
+}
+
+// 上传文件
+type (
+	FileUploadRequest {
+	}
+	FileUploadReply {
+		Code int                 `json:"code"`
+		Data FileUploadReplyData `json:"data"`
+	}
+	FileUploadReplyData {
+		Fid string `json:"fid"`
+	}
+)
+
+// 发起分块上传
+type (
+	InitPartRequest {
+		Pid  string `json:"pid"`
+		Md5  string `json:"md5"`
+		Name string `json:"name"`
+	}
+	InitPartReply {
+		Code int               `json:"code"`
+		Data InitPartReplyData `json:"data"`
+	}
+	InitPartReplyData {
+		Fid      string `json:"fid"`
+		UploadId string `json:"upload_id"`
+	}
+)
+
+// 上传分块
+type (
+	UploadPartRequest {
+	}
+	UploadPartReply {
+		Code int `json:"code"`
+	}
+)
+
+// 完成分块上传
+type (
+	CompletePartRequest {
+		UploadId string `json:"upload_id"`
+	}
+	CompletePartReply {
+		Code int                   `json:"code"`
+		Data CompletePartReplyData `json:"data"`
+	}
+	CompletePartReplyData {
+		Fid string `json:"fid"`
+	}
+)

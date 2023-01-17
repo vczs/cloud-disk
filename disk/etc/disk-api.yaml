@@ -1,0 +1,17 @@
+Name: disk-api
+Host: 0.0.0.0
+Port: 8888
+MaxBytes: 10485760
+Timeout: 5000
+
+Mysql:
+  Host: 127.0.0.1
+  Port: 3306
+  Account: root
+  Password: "123456"
+  Name: "disk"
+  Charset: "utf8mb4"
+
+Redis:
+  Host: 127.0.0.1
+  Port: 6379
