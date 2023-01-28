@@ -3,12 +3,10 @@ package models
 import (
 	"cloud-disk/disk/helper"
 	"fmt"
-	"os"
 
 	"github.com/go-redis/redis/v9"
 	_ "github.com/go-sql-driver/mysql"
 	"xorm.io/xorm"
-	"xorm.io/xorm/log"
 )
 
 // 初始化mysql
@@ -26,15 +24,15 @@ func InitMysql(account string, password string, host string, port int, dbname st
 		helper.VczsLog("xorm create table err", err)
 		return nil
 	}
-	// SQL日志
-	xormLogFile, err := os.OpenFile("logs/xorm_sql.log", os.O_APPEND|os.O_WRONLY, 6)
-	if err != nil {
-		helper.VczsLog("open xorm_sql.log failed", err)
-		return nil
-	}
-	engine.SetLogger(log.NewSimpleLogger(xormLogFile))
-	engine.ShowSQL(true)
-	engine.Logger().SetLevel(log.LOG_INFO)
+	// // SQL日志
+	// xormLogFile, err := os.OpenFile("logs/xorm_sql.log", os.O_APPEND|os.O_WRONLY, 6)
+	// if err != nil {
+	// 	helper.VczsLog("open xorm_sql.log failed", err)
+	// 	return nil
+	// }
+	// engine.SetLogger(log.NewSimpleLogger(xormLogFile))
+	// engine.ShowSQL(true)
+	// engine.Logger().SetLevel(log.LOG_INFO)
 	return engine
 }
 

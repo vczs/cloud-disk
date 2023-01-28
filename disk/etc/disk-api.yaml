@@ -1,6 +1,6 @@
 Name: disk-api
 Host: 0.0.0.0
-Port: 8888
+Port: 8080
 MaxBytes: 10485760
 Timeout: 5000
 

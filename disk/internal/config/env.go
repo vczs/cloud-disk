@@ -8,9 +8,9 @@ var MailPassword = os.Getenv("163pwd") // 邮箱密码
 var CodeLength = 6                     // 验证码长度
 var CodeExpire = 300                   // 验证码过期时间（s）
 
-var CosUrl = "https://vczs-1258443713.cos.ap-chengdu.myqcloud.com" // COS地址
-var TencentSecretId = os.Getenv("TencentSecretId")                 // TencentSecretId
-var TencentSecretKey = os.Getenv("TencentSecretKey")               // TencentSecretKey
+var CosUrl = "https://vcz-1258443713.cos.ap-chengdu.myqcloud.com" // COS地址
+var TencentSecretId = os.Getenv("TencentSecretId")                // TencentSecretId
+var TencentSecretKey = os.Getenv("TencentSecretKey")              // TencentSecretKey
 var CosFolderPath = "disk"
 
 var TokenExpire = 7200        // token过期时间
