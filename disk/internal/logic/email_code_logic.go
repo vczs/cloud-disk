@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -32,14 +32,14 @@ func (l *EmailCodeLogic) EmailCode(req *types.EmailCodeRequest) (resp *types.Ema
 
 	// 参数校验
 	if req.Email == "" {
-		resp.Code = config.EMAIL_EMPTY
+		resp.Code = define.EMAIL_EMPTY
 		return
 	}
 
 	num, err := l.svcCtx.Engine.Where("email = ?", req.Email).Count(new(models.UserBasic))
 	if err != nil || num > 0 {
 		if num > 0 {
-			resp.Code = config.EMAIL_REGISTERED
+			resp.Code = define.EMAIL_REGISTERED
 			return resp, nil
 		}
 		return nil, err
@@ -49,7 +49,7 @@ func (l *EmailCodeLogic) EmailCode(req *types.EmailCodeRequest) (resp *types.Ema
 		return nil, err
 	}
 	if down.Seconds() > 0 || down.Seconds() == -1 {
-		resp.Code = config.REQUEST_OFTEN
+		resp.Code = define.REQUEST_OFTEN
 		return resp, nil
 	}
 	// 获取验证码
@@ -60,6 +60,6 @@ func (l *EmailCodeLogic) EmailCode(req *types.EmailCodeRequest) (resp *types.Ema
 		return nil, err
 	}
 	// 存储验证码
-	l.svcCtx.Redis.Set(l.ctx, req.Email, code, time.Second*time.Duration(config.CodeExpire))
+	l.svcCtx.Redis.Set(l.ctx, req.Email, code, time.Second*time.Duration(define.CodeExpire))
 	return
 }

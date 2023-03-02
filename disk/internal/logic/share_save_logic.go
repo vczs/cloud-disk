@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -41,7 +41,7 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 
 	// 参数校验
 	if req.Sid == "" {
-		resp.Code = config.FILE_SID_EMPTY
+		resp.Code = define.FILE_SID_EMPTY
 		return
 	}
 
@@ -55,24 +55,24 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.SHARE_NOT_EXIST
+		resp.Code = define.SHARE_NOT_EXIST
 		return
 	}
 
 	// 检查资源是否在有效期
 	if shareSaveModel.Expired < time.Now().Unix() {
-		resp.Code = config.SHARE_EXPIRE
+		resp.Code = define.SHARE_EXPIRE
 		return
 	}
 
 	// 检查加密资源密码
-	if shareSaveModel.Type == config.ShareTypeEncrypt {
+	if shareSaveModel.Type == define.ShareTypeEncrypt {
 		if req.Encrypt == "" {
-			resp.Code = config.SHARE_EMPTY
+			resp.Code = define.SHARE_EMPTY
 			return
 		} else {
 			if req.Encrypt != shareSaveModel.Encrypt {
-				resp.Code = config.SHARE_PWD_ERR
+				resp.Code = define.SHARE_PWD_ERR
 				return
 			}
 		}
@@ -90,12 +90,12 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 			return nil, err
 		}
 		if !has {
-			resp.Code = config.FOLDER_NOT_EXIST
+			resp.Code = define.FOLDER_NOT_EXIST
 			return
 		}
 		// 检查目标文件是否为文件夹
-		if uf.Type != config.FileTypeFolder {
-			resp.Code = config.TARGET_NOT_FOLDER
+		if uf.Type != define.FileTypeFolder {
+			resp.Code = define.TARGET_NOT_FOLDER
 			return
 		}
 	}
@@ -107,7 +107,7 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 		return nil, err
 	}
 	if num > 0 {
-		resp.Code = config.TARGET_PATH_NAME_HAS
+		resp.Code = define.TARGET_PATH_NAME_HAS
 		return
 	}
 
@@ -119,7 +119,7 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 		Pid:    pid,
 		Name:   shareSaveModel.Name,
 		Rid:    shareSaveModel.Rid,
-		Type:   config.FileTypeFile,
+		Type:   define.FileTypeFile,
 		Size:   shareSaveModel.Size,
 		Number: 1,
 	}
@@ -134,7 +134,7 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.SHARE_SAVE_ERR
+			resp.Code = define.SHARE_SAVE_ERR
 		} else {
 			session.Commit()
 		}
@@ -142,19 +142,19 @@ func (l *ShareSaveLogic) ShareSave(req *types.ShareSaveRequest, uid string) (res
 	// 保存文件
 	affect, err := session.Insert(&saveuserFile)
 	if err != nil || affect < 1 {
-		panic(config.SHARE_SAVE_ERR)
+		panic(define.SHARE_SAVE_ERR)
 	}
 	// 更新用户文件数量 大小
 	if pid != "0" {
-		FolderSizeChange(session, config.FolderSizeChangeIncrease, pid, shareSaveModel.Size, 1)
+		FolderSizeChange(session, define.FolderSizeChangeIncrease, pid, shareSaveModel.Size, 1)
 		if err != nil {
-			panic(config.SHARE_SAVE_ERR)
+			panic(define.SHARE_SAVE_ERR)
 		}
 	}
 	// 更新用户容量
 	_, err = session.Exec("UPDATE "+new(models.UserBasic).TableName()+" SET now_volume = now_volume + ? WHERE uid = ?", shareSaveModel.Size, uid)
 	if err != nil {
-		panic(config.SHARE_SAVE_ERR)
+		panic(define.SHARE_SAVE_ERR)
 	}
 
 	resp.Data.Fid = fid

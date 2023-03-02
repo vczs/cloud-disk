@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -27,11 +27,11 @@ func NewUserLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserLog
 }
 
 func (l *UserLoginLogic) UserLogin(req *types.UserLoginRequest) (resp *types.UserLoginReply, err error) {
-	resp = &types.UserLoginReply{Code: config.SUCCESS}
+	resp = &types.UserLoginReply{Code: define.SUCCESS}
 
 	// 参数校验
 	if req.Name == "" || req.Password == "" {
-		resp.Code = config.USER_PASSWORD_EMPTY
+		resp.Code = define.USER_PASSWORD_EMPTY
 		return
 	}
 
@@ -40,18 +40,18 @@ func (l *UserLoginLogic) UserLogin(req *types.UserLoginRequest) (resp *types.Use
 	has, err := l.svcCtx.Engine.Where("name = ? and password = ?", req.Name, helper.Md5(req.Password)).Get(user)
 	if !has || err != nil {
 		if !has {
-			resp.Code = config.USER_PASSWORD_ERR
+			resp.Code = define.USER_PASSWORD_ERR
 			return
 		}
 		return
 	}
 	// 生成token
-	token, err := helper.GenerateToken(user.Id, user.Uid, user.Name, config.TokenExpire)
+	token, err := helper.GenerateToken(user.Id, user.Uid, user.Name, define.TokenExpire)
 	if err != nil {
 		return
 	}
 	// 生成refreshToken
-	refreshToken, err := helper.GenerateToken(user.Id, user.Uid, user.Name, config.RefreshTokenExpire)
+	refreshToken, err := helper.GenerateToken(user.Id, user.Uid, user.Name, define.RefreshTokenExpire)
 	if err != nil {
 		return
 	}

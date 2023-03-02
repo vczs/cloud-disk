@@ -1,8 +1,8 @@
-package config
+package define
 
 import "os"
 
-var JwtKey = "vczs-key" // jwt key
+var JwtKey string = "vczs-key" // jwt key
 
 var MailPassword = os.Getenv("163pwd") // 邮箱密码
 var CodeLength = 6                     // 验证码长度

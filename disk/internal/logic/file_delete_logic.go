@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 
-	"cloud-disk/disk/internal/config"
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -31,7 +31,7 @@ func (l *FileDeleteLogic) FileDelete(req *types.FileDeleteRequest, uid string) (
 	// 参数校验
 	fid := req.Fid
 	if fid == "" {
-		resp.Code = config.FILE_RID_EMPTY
+		resp.Code = define.FILE_RID_EMPTY
 		return
 	}
 
@@ -42,7 +42,7 @@ func (l *FileDeleteLogic) FileDelete(req *types.FileDeleteRequest, uid string) (
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_NOT_EXIST
+		resp.Code = define.FILE_NOT_EXIST
 		return resp, nil
 	}
 
@@ -57,7 +57,7 @@ func (l *FileDeleteLogic) FileDelete(req *types.FileDeleteRequest, uid string) (
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.FILE_DELETE_FAILED
+			resp.Code = define.FILE_DELETE_FAILED
 		} else {
 			session.Commit()
 		}
@@ -65,22 +65,22 @@ func (l *FileDeleteLogic) FileDelete(req *types.FileDeleteRequest, uid string) (
 
 	// 从数据库中软删除
 	if userFile.Pid != "0" {
-		err = FolderSizeChange(session, config.FolderSizeChangeDecrease, userFile.Pid, userFile.Size, userFile.Number)
+		err = FolderSizeChange(session, define.FolderSizeChangeDecrease, userFile.Pid, userFile.Size, userFile.Number)
 		if err != nil {
-			panic(config.FILE_DELETE_FAILED)
+			panic(define.FILE_DELETE_FAILED)
 		}
 	}
 	err = DeleteFile(session, userFile.Type, fid, uid)
 	if err != nil {
-		panic(config.FILE_DELETE_FAILED)
+		panic(define.FILE_DELETE_FAILED)
 	}
 	sqlRes, err := session.Exec("UPDATE "+new(models.UserBasic).TableName()+" SET now_volume = now_volume - ? WHERE uid = ?", userFile.Size, uid)
 	if err != nil {
-		panic(config.FILE_DELETE_FAILED)
+		panic(define.FILE_DELETE_FAILED)
 	}
 	affect, err := sqlRes.RowsAffected()
 	if affect < 1 || err != nil {
-		panic(config.FILE_DELETE_FAILED)
+		panic(define.FILE_DELETE_FAILED)
 	}
 
 	return

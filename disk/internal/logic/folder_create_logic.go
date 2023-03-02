@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -31,16 +31,16 @@ func (l *FolderCreateLogic) FolderCreate(req *types.FolderCreateRequest, uid str
 
 	// 参数检验
 	if req.Name == "" {
-		resp.Code = config.FOLDER_NAME_EMPTY
+		resp.Code = define.FOLDER_NAME_EMPTY
 		return
 	}
 
-	number, err := l.svcCtx.Engine.Where("uid = ? and type = ?", uid, config.FileTypeFolder).Count(new(models.UserFileBasic))
+	number, err := l.svcCtx.Engine.Where("uid = ? and type = ?", uid, define.FileTypeFolder).Count(new(models.UserFileBasic))
 	if err != nil {
 		return
 	}
-	if number > int64(config.MaxUserFolder) {
-		resp.Code = config.FOLDER_NUMBER_MAX
+	if number > int64(define.MaxUserFolder) {
+		resp.Code = define.FOLDER_NUMBER_MAX
 		return
 	}
 
@@ -51,16 +51,16 @@ func (l *FolderCreateLogic) FolderCreate(req *types.FolderCreateRequest, uid str
 	} else {
 		// 检查文件是否存在和文件操作权限
 		uf := new(models.UserFileBasic)
-		has, err := l.svcCtx.Engine.Where("fid = ? and type = ?", pid, config.FileTypeFolder).Select("uid").Get(uf)
+		has, err := l.svcCtx.Engine.Where("fid = ? and type = ?", pid, define.FileTypeFolder).Select("uid").Get(uf)
 		if err != nil {
 			return nil, err
 		}
 		if !has {
-			resp.Code = config.FOLDER_NOT_EXIST
+			resp.Code = define.FOLDER_NOT_EXIST
 			return resp, nil
 		}
 		if uf.Uid != uid {
-			resp.Code = config.ACCESS_DENIED
+			resp.Code = define.ACCESS_DENIED
 			return resp, nil
 		}
 	}
@@ -71,7 +71,7 @@ func (l *FolderCreateLogic) FolderCreate(req *types.FolderCreateRequest, uid str
 		return nil, err
 	}
 	if num > 0 {
-		resp.Code = config.FILE_NAME_HAS
+		resp.Code = define.FILE_NAME_HAS
 		return
 	}
 
@@ -81,14 +81,14 @@ func (l *FolderCreateLogic) FolderCreate(req *types.FolderCreateRequest, uid str
 		Fid:    fid,
 		Uid:    uid,
 		Pid:    pid,
-		Type:   config.FileTypeFolder,
+		Type:   define.FileTypeFolder,
 		Name:   req.Name,
 		Number: 0,
 	}
 
 	userFileAffect, err := l.svcCtx.Engine.Insert(userFile)
 	if err != nil || userFileAffect < 1 {
-		panic(config.SERVER_PANIC)
+		panic(define.SERVER_PANIC)
 	}
 
 	resp.Data.Fid = fid

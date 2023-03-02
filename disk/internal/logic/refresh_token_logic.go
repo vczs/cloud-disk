@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 
@@ -35,13 +35,13 @@ func (l *RefreshTokenLogic) RefreshToken(req *types.RefreshTokenRequest, authori
 	}
 
 	// 生成token
-	token, err := helper.GenerateToken(user.Id, user.Uid, user.Name, config.TokenExpire)
+	token, err := helper.GenerateToken(user.Id, user.Uid, user.Name, define.TokenExpire)
 	if err != nil {
 		return nil, err
 	}
 
 	// 生成refreshToken
-	refreshToken, err := helper.GenerateToken(user.Id, user.Uid, user.Name, config.RefreshTokenExpire)
+	refreshToken, err := helper.GenerateToken(user.Id, user.Uid, user.Name, define.RefreshTokenExpire)
 	if err != nil {
 		return nil, err
 	}

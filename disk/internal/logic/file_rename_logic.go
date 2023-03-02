@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -31,11 +31,11 @@ func (l *FileRenameLogic) FileRename(req *types.FileRenameRequest, uid string) (
 
 	// 参数检验
 	if req.Fid == "" {
-		resp.Code = config.FILE_RID_EMPTY
+		resp.Code = define.FILE_RID_EMPTY
 		return
 	}
 	if req.Name == "" {
-		resp.Code = config.FOLDER_NAME_EMPTY
+		resp.Code = define.FOLDER_NAME_EMPTY
 		return
 	}
 
@@ -46,7 +46,7 @@ func (l *FileRenameLogic) FileRename(req *types.FileRenameRequest, uid string) (
 		return nil, err
 	}
 	if total > 0 {
-		resp.Code = config.FILE_NAME_HAS
+		resp.Code = define.FILE_NAME_HAS
 		return
 	}
 
@@ -57,11 +57,11 @@ func (l *FileRenameLogic) FileRename(req *types.FileRenameRequest, uid string) (
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_NOT_EXIST
+		resp.Code = define.FILE_NOT_EXIST
 		return
 	}
 	if userFile.Uid != uid {
-		resp.Code = config.ACCESS_DENIED
+		resp.Code = define.ACCESS_DENIED
 		return
 	}
 
@@ -69,7 +69,7 @@ func (l *FileRenameLogic) FileRename(req *types.FileRenameRequest, uid string) (
 	num, err := l.svcCtx.Engine.Where("fid = ?", req.Fid).Cols("name").Update(&models.UserFileBasic{Name: req.Name})
 	if err != nil || num < 1 {
 		if num < 1 {
-			resp.Code = config.SERVER_PANIC
+			resp.Code = define.SERVER_PANIC
 			return
 		}
 		return nil, err

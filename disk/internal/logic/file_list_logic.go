@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -44,12 +44,12 @@ func (l *FileListLogic) FileList(req *types.FileListRequest, uid string) (resp *
 			return nil, err
 		}
 		if !has {
-			resp.Code = config.FOLDER_NOT_EXIST
+			resp.Code = define.FOLDER_NOT_EXIST
 			return resp, nil
 		}
 		// 检查目标文件是否为文件夹
-		if uf.Type != config.FileTypeFolder {
-			resp.Code = config.TARGET_NOT_FOLDER
+		if uf.Type != define.FileTypeFolder {
+			resp.Code = define.TARGET_NOT_FOLDER
 			return resp, nil
 		}
 		pid = uf.Pid
@@ -58,7 +58,7 @@ func (l *FileListLogic) FileList(req *types.FileListRequest, uid string) (resp *
 	// 处理分页信息
 	number := req.Size
 	if number == 0 {
-		number = config.DefaultPageSize
+		number = define.DefaultPageSize
 	}
 	start := req.Page
 	if start == 0 {

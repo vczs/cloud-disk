@@ -8,8 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -48,7 +48,7 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 	// 文件名非空判断
 	name := strings.TrimSuffix(fileHeader.Filename, ext)
 	if name == "" {
-		resp.Code = config.FILE_NAME_EMPTY
+		resp.Code = define.FILE_NAME_EMPTY
 		return
 	}
 
@@ -63,11 +63,11 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 			return nil, err
 		}
 		if !has {
-			resp.Code = config.FOLDER_NOT_EXIST
+			resp.Code = define.FOLDER_NOT_EXIST
 			return resp, nil
 		} else {
-			if userFile.Type != config.FileTypeFolder {
-				resp.Code = config.TARGET_NOT_FOLDER
+			if userFile.Type != define.FileTypeFolder {
+				resp.Code = define.TARGET_NOT_FOLDER
 				return resp, nil
 			}
 		}
@@ -79,7 +79,7 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 		return
 	}
 	if total > 0 {
-		resp.Code = config.FILE_NAME_HAS
+		resp.Code = define.FILE_NAME_HAS
 		return resp, nil
 	}
 
@@ -90,11 +90,11 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 		return
 	}
 	if !has {
-		resp.Code = config.USER_NOT_EXIST
+		resp.Code = define.USER_NOT_EXIST
 		return
 	}
 	if helper.ByteToKb(size)+userInfo.NowVolume > userInfo.TotalVolume {
-		resp.Code = config.CAP_OVERFLOW
+		resp.Code = define.CAP_OVERFLOW
 		return
 	}
 
@@ -122,7 +122,7 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.FILE_UPLOAD_FAILED
+			resp.Code = define.FILE_UPLOAD_FAILED
 		} else {
 			session.Commit()
 		}
@@ -136,7 +136,7 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 		Pid:    pid,
 		Name:   name,
 		Rid:    bucketUrl.Rid,
-		Type:   config.FileTypeFile,
+		Type:   define.FileTypeFile,
 		Size:   size,
 		Number: 1,
 	}
@@ -157,21 +157,21 @@ func (l *FileUploadLogic) FileUpload(req *types.FileUploadRequest, r *http.Reque
 		}
 		bucketAffect, err := session.Insert(bucket)
 		if err != nil || bucketAffect < 1 {
-			panic(config.FILE_UPLOAD_FAILED)
+			panic(define.FILE_UPLOAD_FAILED)
 		}
 		userFile.Rid = rid
 	}
 
 	userFileAffect, err := session.Insert(userFile)
 	if err != nil || userFileAffect < 1 {
-		panic(config.FILE_UPLOAD_FAILED)
+		panic(define.FILE_UPLOAD_FAILED)
 	}
 
 	_, err = session.Exec("UPDATE "+new(models.UserBasic).TableName()+" SET now_volume = now_volume + ? WHERE uid = ?", size, uid)
 	if pid != "0" {
-		err = FolderSizeChange(session, config.FolderSizeChangeIncrease, pid, size, 1)
+		err = FolderSizeChange(session, define.FolderSizeChangeIncrease, pid, size, 1)
 		if err != nil {
-			panic(config.FILE_UPLOAD_FAILED)
+			panic(define.FILE_UPLOAD_FAILED)
 		}
 	}
 

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"cloud-disk/disk/internal/config"
+	"cloud-disk/disk/define"
 	"context"
 	"net/http"
 
@@ -15,8 +15,8 @@ type Body struct {
 }
 
 func Response(c context.Context, w http.ResponseWriter, code int, data interface{}) {
-	body := Body{Code: code, Msg: config.GetMessage(code)}
-	if code == config.SUCCESS {
+	body := Body{Code: code, Msg: define.GetMessage(code)}
+	if code == define.SUCCESS {
 		body.Data = data
 		httpx.OkJsonCtx(c, w, body)
 	} else {

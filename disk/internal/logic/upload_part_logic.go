@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -62,7 +62,7 @@ func (l *UploadPartLogic) UploadPart(req *types.UploadPartRequest, r *http.Reque
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_PATCH_NOT_EXIST
+		resp.Code = define.FILE_PATCH_NOT_EXIST
 		return
 	}
 
@@ -73,11 +73,11 @@ func (l *UploadPartLogic) UploadPart(req *types.UploadPartRequest, r *http.Reque
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.USER_NOT_EXIST
+		resp.Code = define.USER_NOT_EXIST
 		return
 	}
 	if helper.ByteToKb(fileHeader.Size)+userPatch.Size+userInfo.NowVolume > userInfo.TotalVolume {
-		resp.Code = config.CAP_OVERFLOW
+		resp.Code = define.CAP_OVERFLOW
 		return
 	}
 
@@ -109,18 +109,18 @@ func (l *UploadPartLogic) UploadPart(req *types.UploadPartRequest, r *http.Reque
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.PATCH_UPLOAD_FAILED
+			resp.Code = define.PATCH_UPLOAD_FAILED
 		} else {
 			session.Commit()
 		}
 	}()
 	affect, err := session.Insert(patch)
 	if err != nil || affect < 1 {
-		panic(config.FILE_MOVE_FAILED)
+		panic(define.FILE_MOVE_FAILED)
 	}
 	affect, err = session.Where("upload_id = ? and number = 0", uploadId).Cols("size").Update(&models.UserPatchBasic{Size: userPatch.Size + helper.ByteToKb(fileHeader.Size)})
 	if err != nil || affect < 1 {
-		panic(config.FILE_MOVE_FAILED)
+		panic(define.FILE_MOVE_FAILED)
 	}
 
 	return resp, nil

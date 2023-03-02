@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -51,7 +51,7 @@ func (l *CompletePartLogic) CompletePart(req *types.CompletePartRequest, uid str
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_PATCH_NOT_EXIST
+		resp.Code = define.FILE_PATCH_NOT_EXIST
 		return
 	}
 
@@ -72,18 +72,18 @@ func (l *CompletePartLogic) CompletePart(req *types.CompletePartRequest, uid str
 	}
 	err = helper.CosCompletePart(userPatch.PatchKey, uploadId, c)
 	if err != nil {
-		resp.Code = config.COMPLETE_PART_FAILED
+		resp.Code = define.COMPLETE_PART_FAILED
 		return
 	}
 
 	// 查询分块初始化时记录的文件信息
 	userFile := new(models.UserFileBasic)
-	has, err = l.svcCtx.Engine.Where("rid = ? and uid = ? and type = ?", uploadId, uid, config.FileTypeUndone).Select("name,fid,pid").Get(userFile)
+	has, err = l.svcCtx.Engine.Where("rid = ? and uid = ? and type = ?", uploadId, uid, define.FileTypeUndone).Select("name,fid,pid").Get(userFile)
 	if err != nil {
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_PATCH_NOT_EXIST
+		resp.Code = define.FILE_PATCH_NOT_EXIST
 		return
 	}
 
@@ -94,7 +94,7 @@ func (l *CompletePartLogic) CompletePart(req *types.CompletePartRequest, uid str
 		Hash: userPatch.Etag,
 		Ext:  path.Ext(userFile.Name),
 		Size: userPatch.Size,
-		Url:  config.CosUrl + "/" + userPatch.PatchKey,
+		Url:  define.CosUrl + "/" + userPatch.PatchKey,
 	}
 
 	// 创建事务
@@ -108,7 +108,7 @@ func (l *CompletePartLogic) CompletePart(req *types.CompletePartRequest, uid str
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.SERVER_PANIC
+			resp.Code = define.SERVER_PANIC
 		} else {
 			session.Commit()
 		}
@@ -116,26 +116,26 @@ func (l *CompletePartLogic) CompletePart(req *types.CompletePartRequest, uid str
 
 	affect, err := session.Insert(bucket)
 	if err != nil || affect < 1 {
-		panic(config.SERVER_PANIC)
+		panic(define.SERVER_PANIC)
 	}
-	affect, err = session.Where("rid = ?", uploadId).Cols("rid", "name", "type", "size", "number").Update(&models.UserFileBasic{Rid: rid, Name: strings.TrimSuffix(userFile.Name, path.Ext(userFile.Name)), Type: config.FileTypeFile, Number: 1, Size: userPatch.Size})
+	affect, err = session.Where("rid = ?", uploadId).Cols("rid", "name", "type", "size", "number").Update(&models.UserFileBasic{Rid: rid, Name: strings.TrimSuffix(userFile.Name, path.Ext(userFile.Name)), Type: define.FileTypeFile, Number: 1, Size: userPatch.Size})
 	if err != nil || affect < 1 {
-		panic(config.SERVER_PANIC)
+		panic(define.SERVER_PANIC)
 	}
 	sqlRes, err := session.Exec("UPDATE "+new(models.UserBasic).TableName()+" SET now_volume = now_volume + ? WHERE uid = ?", userPatch.Size, uid)
 	affect, err = sqlRes.RowsAffected()
 	if err != nil || affect < 1 {
-		panic(config.SERVER_PANIC)
+		panic(define.SERVER_PANIC)
 	}
 	if userFile.Pid != "0" {
-		err = FolderSizeChange(session, config.FolderSizeChangeIncrease, userFile.Pid, userPatch.Size, 1)
+		err = FolderSizeChange(session, define.FolderSizeChangeIncrease, userFile.Pid, userPatch.Size, 1)
 		if err != nil {
-			panic(config.SERVER_PANIC)
+			panic(define.SERVER_PANIC)
 		}
 	}
 	affect, err = session.Where("upload_id = ? and uid = ?", uploadId, uid).Delete(new(models.UserPatchBasic))
 	if err != nil || affect < 1 {
-		panic(config.SERVER_PANIC)
+		panic(define.SERVER_PANIC)
 	}
 
 	resp.Data.Fid = userFile.Fid

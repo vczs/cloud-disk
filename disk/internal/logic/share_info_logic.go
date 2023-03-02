@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -32,7 +32,7 @@ func (l *ShareInfoLogic) ShareInfo(req *types.ShareInfoRequest) (resp *types.Sha
 
 	// 参数校验
 	if req.Sid == "" {
-		resp.Code = config.FILE_SID_EMPTY
+		resp.Code = define.FILE_SID_EMPTY
 		return
 	}
 
@@ -44,7 +44,7 @@ func (l *ShareInfoLogic) ShareInfo(req *types.ShareInfoRequest) (resp *types.Sha
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.SHARE_NOT_EXIST
+		resp.Code = define.SHARE_NOT_EXIST
 		return
 	} else {
 		userFile := new(models.UserFileBasic)
@@ -54,25 +54,25 @@ func (l *ShareInfoLogic) ShareInfo(req *types.ShareInfoRequest) (resp *types.Sha
 			return nil, err
 		}
 		if num < 1 {
-			resp.Code = config.SHARE_NOT_EXIST
+			resp.Code = define.SHARE_NOT_EXIST
 			return resp, nil
 		}
 	}
 
 	// 检查资源是否在有效期
 	if share.Expired < time.Now().Unix() {
-		resp.Code = config.SHARE_EXPIRE
+		resp.Code = define.SHARE_EXPIRE
 		return
 	}
 
 	// 检查加密资源密码
-	if share.Type == config.ShareTypeEncrypt {
+	if share.Type == define.ShareTypeEncrypt {
 		if req.Encrypt == "" {
-			resp.Code = config.SHARE_EMPTY
+			resp.Code = define.SHARE_EMPTY
 			return
 		} else {
 			if req.Encrypt != share.Encrypt.String {
-				resp.Code = config.SHARE_PWD_ERR
+				resp.Code = define.SHARE_PWD_ERR
 				return
 			}
 		}
@@ -96,7 +96,7 @@ func (l *ShareInfoLogic) ShareInfo(req *types.ShareInfoRequest) (resp *types.Sha
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.SHARE_NOT_EXIST
+		resp.Code = define.SHARE_NOT_EXIST
 		return
 	}
 

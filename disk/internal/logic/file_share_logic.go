@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -32,7 +32,7 @@ func (l *FileShareLogic) FileShare(req *types.FileShareRequest, uid string) (res
 
 	// 参数校验
 	if req.Fid == "" {
-		resp.Code = config.FILE_RID_EMPTY
+		resp.Code = define.FILE_RID_EMPTY
 		return
 	}
 
@@ -43,13 +43,13 @@ func (l *FileShareLogic) FileShare(req *types.FileShareRequest, uid string) (res
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_NOT_EXIST
+		resp.Code = define.FILE_NOT_EXIST
 		return
 	}
 
 	// 检查要操作的文件是否为文件
-	if userFile.Type != config.FileTypeFile {
-		resp.Code = config.FOLDER_NOT_SHARE
+	if userFile.Type != define.FileTypeFile {
+		resp.Code = define.FOLDER_NOT_SHARE
 		return
 	}
 
@@ -59,13 +59,13 @@ func (l *FileShareLogic) FileShare(req *types.FileShareRequest, uid string) (res
 		Sid:     sid,
 		Uid:     uid,
 		Fid:     req.Fid,
-		Type:    config.ShareTypePublic,
+		Type:    define.ShareTypePublic,
 		Encrypt: sql.NullString{Valid: false},
 		Expired: req.Expired,
 		Browse:  0,
 	}
 	if req.Encrypt != "" {
-		share.Type = config.ShareTypeEncrypt
+		share.Type = define.ShareTypeEncrypt
 		share.Encrypt = sql.NullString{String: req.Encrypt, Valid: true}
 	}
 
@@ -75,7 +75,7 @@ func (l *FileShareLogic) FileShare(req *types.FileShareRequest, uid string) (res
 		return nil, err
 	}
 	if affect < 1 {
-		resp.Code = config.SHARE_FAILED
+		resp.Code = define.SHARE_FAILED
 	}
 
 	resp.Data.Sid = sid

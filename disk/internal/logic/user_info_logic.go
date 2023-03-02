@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 
-	"cloud-disk/disk/internal/config"
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -34,7 +34,7 @@ func (l *UserInfoLogic) UserInfo(uid string) (resp *types.UserInfoReply, err err
 		return
 	}
 	if !has {
-		resp.Code = config.USER_NOT_EXIST
+		resp.Code = define.USER_NOT_EXIST
 		return
 	}
 	// 返回用户详情

@@ -2,7 +2,6 @@ package helper
 
 import (
 	"bytes"
-	"cloud-disk/disk/internal/config"
 	"context"
 	"io"
 	"net/http"
@@ -10,16 +9,18 @@ import (
 	"path"
 	"strings"
 
+	"cloud-disk/disk/define"
+
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
 func CosUploadFile(r *http.Request) (string, error) {
-	url, _ := url.Parse(config.CosUrl)
+	url, _ := url.Parse(define.CosUrl)
 	baseUrl := &cos.BaseURL{BucketURL: url}
 	client := cos.NewClient(baseUrl, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  config.TencentSecretId,
-			SecretKey: config.TencentSecretKey,
+			SecretID:  define.TencentSecretId,
+			SecretKey: define.TencentSecretKey,
 		},
 	})
 
@@ -27,27 +28,27 @@ func CosUploadFile(r *http.Request) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	name := config.CosFolderPath + "/" + GetUid() + path.Ext(fileHeader.Filename)
+	name := define.CosFolderPath + "/" + GetUid() + path.Ext(fileHeader.Filename)
 
 	_, err = client.Object.Put(context.Background(), name, file, nil)
 	if err != nil {
 		return "", err
 	}
 
-	return config.CosUrl + "/" + name, nil
+	return define.CosUrl + "/" + name, nil
 }
 
-/////////////////////////////////////////////////分片上传////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////分片上传////////////////////////////////////////////////////////////////////////
 func CosInitPart(ext string) (string, string, error) {
-	url, _ := url.Parse(config.CosUrl)
+	url, _ := url.Parse(define.CosUrl)
 	baseUrl := &cos.BaseURL{BucketURL: url}
 	client := cos.NewClient(baseUrl, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  config.TencentSecretId,
-			SecretKey: config.TencentSecretKey,
+			SecretID:  define.TencentSecretId,
+			SecretKey: define.TencentSecretKey,
 		},
 	})
-	key := config.CosFolderPath + "/" + GetUid() + ext
+	key := define.CosFolderPath + "/" + GetUid() + ext
 	v, _, err := client.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		return "", "", nil
@@ -56,12 +57,12 @@ func CosInitPart(ext string) (string, string, error) {
 }
 
 func CosUploadPart(r *http.Request, key, uploadId string, number int) (string, error) {
-	url, _ := url.Parse(config.CosUrl)
+	url, _ := url.Parse(define.CosUrl)
 	baseUrl := &cos.BaseURL{BucketURL: url}
 	client := cos.NewClient(baseUrl, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  config.TencentSecretId,
-			SecretKey: config.TencentSecretKey,
+			SecretID:  define.TencentSecretId,
+			SecretKey: define.TencentSecretKey,
 		},
 	})
 
@@ -83,12 +84,12 @@ func CosUploadPart(r *http.Request, key, uploadId string, number int) (string, e
 }
 
 func CosCompletePart(key, uploadId string, c []cos.Object) error {
-	url, _ := url.Parse(config.CosUrl)
+	url, _ := url.Parse(define.CosUrl)
 	baseUrl := &cos.BaseURL{BucketURL: url}
 	client := cos.NewClient(baseUrl, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  config.TencentSecretId,
-			SecretKey: config.TencentSecretKey,
+			SecretID:  define.TencentSecretId,
+			SecretKey: define.TencentSecretKey,
 		},
 	})
 

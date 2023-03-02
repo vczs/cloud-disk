@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"cloud-disk/disk/internal/config"
+	"cloud-disk/disk/define"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -22,7 +22,7 @@ func GenerateToken(id int, uid, name string, second int) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(second)))},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, uc)
-	tokenString, err := token.SignedString([]byte(config.JwtKey))
+	tokenString, err := token.SignedString([]byte(define.JwtKey))
 	if err != nil {
 		return "", err
 	}

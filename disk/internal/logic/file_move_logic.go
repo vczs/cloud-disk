@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
+	"cloud-disk/disk/define"
 	"cloud-disk/disk/helper"
-	"cloud-disk/disk/internal/config"
 	"cloud-disk/disk/internal/svc"
 	"cloud-disk/disk/internal/types"
 	"cloud-disk/disk/models"
@@ -31,11 +31,11 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 
 	// 参数校验
 	if req.Fid == "" {
-		resp.Code = config.FILE_RID_EMPTY
+		resp.Code = define.FILE_RID_EMPTY
 		return
 	}
 	if req.Pid == "" {
-		resp.Code = config.FILE_PID_EMPTY
+		resp.Code = define.FILE_PID_EMPTY
 		return
 	}
 
@@ -47,7 +47,7 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 		return nil, err
 	}
 	if !has {
-		resp.Code = config.FILE_NOT_EXIST
+		resp.Code = define.FILE_NOT_EXIST
 		return
 	}
 	if req.Pid == userFile.Pid {
@@ -64,12 +64,12 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 			return nil, err
 		}
 		if !has {
-			resp.Code = config.FOLDER_NOT_EXIST
+			resp.Code = define.FOLDER_NOT_EXIST
 			return
 		}
 		// 检查目标文件是否为文件夹
-		if uf.Type != config.FileTypeFolder {
-			resp.Code = config.TARGET_NOT_FOLDER
+		if uf.Type != define.FileTypeFolder {
+			resp.Code = define.TARGET_NOT_FOLDER
 			return
 		}
 	}
@@ -81,7 +81,7 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 		return nil, err
 	}
 	if num > 0 {
-		resp.Code = config.TARGET_PATH_NAME_HAS
+		resp.Code = define.TARGET_PATH_NAME_HAS
 		return
 	}
 
@@ -96,7 +96,7 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 		err := recover()
 		if err != nil {
 			session.Rollback()
-			resp.Code = config.FILE_MOVE_FAILED
+			resp.Code = define.FILE_MOVE_FAILED
 		} else {
 			session.Commit()
 		}
@@ -104,20 +104,20 @@ func (l *FileMoveLogic) FileMove(req *types.FileMoveRequest, uid string) (resp *
 
 	// 移动文件
 	if pid != "0" {
-		err = FolderSizeChange(session, config.FolderSizeChangeIncrease, pid, userFile.Size, 1)
+		err = FolderSizeChange(session, define.FolderSizeChangeIncrease, pid, userFile.Size, 1)
 		if err != nil {
-			panic(config.FILE_MOVE_FAILED)
+			panic(define.FILE_MOVE_FAILED)
 		}
 	}
 	if userFile.Pid != "0" {
-		err = FolderSizeChange(session, config.FolderSizeChangeDecrease, userFile.Pid, userFile.Size, 1)
+		err = FolderSizeChange(session, define.FolderSizeChangeDecrease, userFile.Pid, userFile.Size, 1)
 		if err != nil {
-			panic(config.FILE_MOVE_FAILED)
+			panic(define.FILE_MOVE_FAILED)
 		}
 	}
 	affect, err := session.Where("fid = ?", req.Fid).Cols("pid").Update(&models.UserFileBasic{Pid: pid})
 	if err != nil || affect < 1 {
-		panic(config.FILE_MOVE_FAILED)
+		panic(define.FILE_MOVE_FAILED)
 	}
 
 	return
